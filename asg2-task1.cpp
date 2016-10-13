@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cstdint>
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Function.h"
@@ -17,9 +18,13 @@ int main(int argc, char **argv)
 	typedef std::unordered_set<std::string> setCalled;
 	typedef std::unordered_set<std::string> setFunction;
 	typedef std::unordered_set<std::string> setVariables;
+	typedef std::unordered_set<uintptr_t> setFunctionPointers;
+	typedef std::unordered_set<uintptr_t> setFunctionsPointed;
 	setCalled Scalls;
 	setFunction Sfunc;
 	setVariables Svar;
+	setFunctionPointers Sfuncptrs;
+	setFunctionsPointed Sfuncptd;
 
 	// Read the IR file.
 	LLVMContext &Context = getGlobalContext();
@@ -36,8 +41,8 @@ int main(int argc, char **argv)
 			curFref != endFref; ++curFref) {
 		string str = curFref->getName().str().c_str();
 		Sfunc.insert(str);
-
-
+		Sfuncptd.insert(reinterpret_cast<uintptr_t>(&curFref));
+		printf("First address of function: %lu\n", reinterpret_cast<uintptr_t>(&curFref));
 		//printf("found function:%s\n",curFref->getName().str().c_str());
 	}
 
@@ -47,6 +52,7 @@ int main(int argc, char **argv)
 			curVref != endVref; ++curVref) {
 		string var = curVref->getName().str().c_str();
 		Svar.insert(var);
+		printf("First address of function ptr: %lu\n", reinterpret_cast<uintptr_t>(&curVref));
 		//printf("Variable: %s\n", var);
 	}
 
@@ -68,7 +74,8 @@ int main(int argc, char **argv)
 							ptrType = pointedType;
 						} while ((pt = (dyn_cast<PointerType>(ptrType))));
 					}
-					printf("Type: %s\n", ptrType);
+					printf("Second address of function ptr: %lu\n", reinterpret_cast<uintptr_t>(&I));				
+					Sfuncptrs.insert(reinterpret_cast<uintptr_t>(&I));
 				}
 
 				CallInst *Call = dyn_cast<CallInst>(&I);
@@ -88,8 +95,21 @@ int main(int argc, char **argv)
 		}
 	}
 
-	printf("Total Number of Calls: %d\n",Scalls.size());
-	printf("Total Number of Functions: %d\n",Sfunc.size());
+	// Comparing addresses of function ptr and functions; same address means the ptr is calling the function
+	for (auto element: Sfuncptrs) {
+		for (auto curFref = M->getFunctionList().begin(), 
+				endFref = M->getFunctionList().end(); 
+				curFref != endFref; ++curFref) {
+			printf("Third address of function ptr: %lu\n", element);
+			printf("Third address of function: %lu\n", reinterpret_cast<uintptr_t>(&curFref));
+			if (element == reinterpret_cast<uintptr_t>(&curFref)){
+				Scalls.insert(curFref->getName().str().c_str());
+			}
+		}
+	}
+
+	printf("Total Number of Calls: %lu\n",Scalls.size());
+	printf("Total Number of Functions: %lu\n",Sfunc.size());
 
 	int counter = 0;
 	printf("List of Dead functions:\n");
