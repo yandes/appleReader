@@ -31,43 +31,72 @@ for(int i=1; i<argc; i++){
 	
 	for (auto &F: *M){
 		for (auto &BB: F){
-		printf("-------------Function Name: %s-------------\n",F.getName().str().c_str());
+		printf("------------------------------------------Function Name: %s----------------------------------------\n",F.getName().str().c_str());
 			for (auto &I: BB){
-	
-				//printf("opcode: %u\n", I.getOpcode());
-				//printf("opcodeName:%s\n",I.getOpcodeName());
-				//printf("Can read: %d\n", I.mayReadFromMemory());
+
 				/*-----------------------AllocaInst----------------*/
 				if(AllocaInst *ai =dyn_cast<AllocaInst>(&I)){
-					Type* type1= ai->getAllocatedType();
+					printf("-----------------Alloca str: %s-----------------\n",ai->getName());
+					printf("-----------------Alloca add:%u-------------\n", ai);
+					printf("-------------AllocaInstI: %lu-------------\n\n", reinterpret_cast<uintptr_t>(&I));								
+					/*Type* type1= ai->getAllocatedType();
 					if(type1->isPointerTy()){
-						printf("-------------Pointer---------------\n");
-						printf("-------------ptr: %lu-------------\n", reinterpret_cast<uintptr_t>(&I));										
+						//printf("-----------------Pointer-------------------\n");
+						printf("-------------Allocptr: %lu-------------\n", reinterpret_cast<uintptr_t>(&I));
+						printf("-------------AllocptrInst: %lu-------------\n\n", reinterpret_cast<uintptr_t>(&ai));										
 						//printf("Ptr Add: %u\n",type1->getPointerAddressSpace());					
 					}
 					if(type1->isSingleValueType()){
-					printf("-------------Variable---------------\n");
-					printf("-------------variable: %lu-------------\n", reinterpret_cast<uintptr_t>(&I));																				
-					}
+					printf("------------------AllocVariable-------------------\n");
+					printf("-------------AllocVariableI: %lu-------------\n", reinterpret_cast<uintptr_t>(&I));	
+					printf("-------------AllocVarAi: %lu-------------\n\n", reinterpret_cast<uintptr_t>(&ai));																			
+					}*/
 				}
-				/*-------------------Store Instr--------------------*/
+				/*-----------------------------------Store Instr------------------------------------*/
 				if(StoreInst *si =dyn_cast<StoreInst>(&I)){
 					Value* vSi =si->getPointerOperand();
-					printf("-------------Store inst Value: %s-------------\n",vSi->getName());
-					printf("-------------Store value addrspace: %u-------------\n",si->getPointerAddressSpace());
-					printf("-------------Store value alignment: %u-------------\n",si->getAlignment());
-					Type* type2=vSi->getType();
-					PointerType* ptrType2 = type2->getPointerTo();
-					printf("-------------PointedTo: %u-------------\n",ptrType2->getAddressSpace());
-					if((!type2->isPointerTy())&&(type2->isSingleValueType()))
-						printf("-------Store: Variable-------\n");
+					
+					//printf("-----------------Store inst Value: %s-----------------\n",vSi->getName());
+					printf("-----------------Store 1 str: %s-----------------\n",si->getName());
+					printf("-----------------Store add:%u-------------\n", si);
+					printf("-----------------Store 2 str: %s-----------------\n",si->getOperand(0)->getName());
+					printf("-----------------Store add:%u-------------\n", si->getOperand(0));
+					printf("-----------------Store 3 str: %s-----------------\n",si->getOperand(1)->getName());
+					printf("-----------------Store add: %u-------------\n", si->getOperand(1));
+					printf("-------------StoreInstI: %lu-------------\n\n", reinterpret_cast<uintptr_t>(&I));			
+				
 				
 				}
-				/*-----------------Load Instr-----------------------*/
+				/*---------------------------------Load Instr---------------------------------------*/
 				if(LoadInst *li =dyn_cast<LoadInst>(&I)){
-				
+				printf("-----------------Load str: %s-----------------\n",li->getOperand(0)->getName());
+				printf("-----------------Load add:%u-------------\n", li->getOperand(0));
+				printf("-------------LoadInstI: %lu-------------\n\n", reinterpret_cast<uintptr_t>(&I));
+/*				Value* vLi =li->getPointerOperand();
+				printf("-----------------Load inst Value: %s-----------------\n",vLi->getName());
+				printf("-------------LoadInstI: %lu-------------\n", reinterpret_cast<uintptr_t>(&I));
+				printf("-------------Load Inst: %lu-------------\n\n", reinterpret_cast<uintptr_t>(&li));*/
+				}
+				/*--------------------------------Ret Instr--------------------------------*/
+				if(I.getOpcode()==Instruction::Ret){
+				ReturnInst *inst = dyn_cast<ReturnInst>(&I);
+				printf("-----------------Ret str: %s-----------------\n",inst->getOperand(0)->getName());
+				printf("-----------------Ret add:%u-------------\n", inst->getOperand(0));
+				printf("-------------RetInstI: %lu-------------\n\n", reinterpret_cast<uintptr_t>(&I));			
 
 
+				/*Value* vRi =inst->getReturnValue();
+				printf("-----------------Ret inst Value: %s-----------------\n",vRi->getName());
+				printf("-------------RetInstI: %lu-------------\n", reinterpret_cast<uintptr_t>(&I));			
+				printf("-------------Ret Inst: %lu-------------\n\n", reinterpret_cast<uintptr_t>(&inst));*/
+				}
+				if(I.getOpcode()==Instruction::GetElementPtr){
+				GetElementPtrInst *inst =dyn_cast<GetElementPtrInst>(&I);
+				printf("-----------------getelementptr str: %s-----------------\n",inst->getName());
+				printf("-----------------getelementptr add:%u-------------\n", inst);
+				printf("-----------------getelementptr str: %s-----------------\n",inst->getOperand(0)->getName());
+				printf("-----------------getelementptr add:%u-------------\n", inst->getOperand(0));
+				printf("-------------getelementptrInstI: %lu-------------\n\n", reinterpret_cast<uintptr_t>(&I));			
 
 				}
 		
